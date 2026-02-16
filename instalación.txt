@@ -42,3 +42,7 @@ pip install torch transformers sentence-transformers
 De ahi es instalar chromaDB:
 pip install chromadb
 
+FastAPI 
+Paso 1: Crear carpeta main.py
+Paso 2: pip install fastapi uvicorn (venv) backend
+Paso 3: uvicorn main:app --reload (venv) partida_a

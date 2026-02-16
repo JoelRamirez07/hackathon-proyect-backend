@@ -1,4 +1,6 @@
 node_modules/
 venv/
+db/
+partida_a/__pycache__
 .env
 *.log
