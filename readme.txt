@@ -35,3 +35,6 @@ pip install google-genai
 
 Ejecutar el proceso:
 python partida_a/test_ingesta.py
+
+Instala:
+pip install torch transformers sentence-transformers
