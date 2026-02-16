@@ -38,3 +38,7 @@ python partida_a/test_ingesta.py
 
 Instala:
 pip install torch transformers sentence-transformers
+
+De ahi es instalar chromaDB:
+pip install chromadb
+

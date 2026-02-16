@@ -4,13 +4,9 @@ from google import genai
 
 load_dotenv()
 
-client = genai.Client(
-    api_key=os.getenv("GEMINI_API_KEY"),
-    http_options={"api_version": "v1"}
-)
+client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 
-def process_text(text: str):
-
+def process_text(text):
     prompt = f"""
     Limpia el siguiente texto.
     Clasifícalo en una de estas categorías:
@@ -19,10 +15,10 @@ def process_text(text: str):
     - Publicaciones
     - Otro
 
-    Devuelve EXCLUSIVAMENTE un JSON válido con:
+    Devuelve JSON con:
     - categoria
     - resumen
-    - palabras_clave (lista)
+    - palabras_clave
 
     Texto:
     {text[:4000]}
