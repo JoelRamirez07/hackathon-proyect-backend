@@ -1,0 +1,37 @@
+Para iniciar el sistema hay que instalar Python, en esta ocasión se esta usando 3.11.9, se instala en donde desee el usuario, de hi hay que montar el entorno virtual por lo que hay que acceder a la carpeta donde estaremos trabando desde CMD y ejecutar:
+python -m venv venv venv\Scripts\actívate
+
+Si todo sale bien se vera la carpeta y antes de este la palabra (venv):
+venv\Scripts\activate
+
+Después hay que tener en la raíz del proyecto el archivo txt requirements, con los siguientes datos:
+fastapi
+uvicorn
+requests
+beautifulsoup4
+openai
+llama-index
+chromadb
+python-dotenv
+
+
+Y en nuestro cmd donde tenemos el entorno virtual ejecutar:
+pip install -r requirements.txt
+
+
+Para la parte de la api, se saco de: (este no porque no da creditos gratis)
+https://platform.openai.com
+
+Se cambio por gemini:
+https://aistudio.google.com/
+
+
+En Get API Key, sacar la Key
+
+Ponerlo en el .env
+Instalar la libreria en la imaagen virtual (CMD)
+pip install google-genai
+
+
+Ejecutar el proceso:
+python partida_a/test_ingesta.py
