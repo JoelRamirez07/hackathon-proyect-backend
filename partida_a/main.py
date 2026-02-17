@@ -87,13 +87,13 @@ def buscar(query: str, top_k: int = 3):
 
         respuesta = []
 
-        for i in range(len(results["ids"][0])):
-            respuesta.append({
-                "id": results["ids"][0][i],
-                "distancia": results["distances"][0][i],
-                "metadata": results["metadatas"][0][i],
-                "contenido": results["documents"][0][i][:500]  # preview
-            })
+        if results["documents"] and results["documents"][0]:
+            for i in range(len(results["documents"][0])):
+                respuesta.append({
+                    "distancia": results["distances"][0][i],
+                    "metadata": results["metadatas"][0][i],
+                    "contenido": results["documents"][0][i][:500]
+                })
 
         return {
             "query": query,

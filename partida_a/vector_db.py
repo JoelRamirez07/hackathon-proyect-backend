@@ -41,4 +41,30 @@ def search_similar(query: str, top_k: int = 3):
         include=["documents", "metadatas", "distances"]
     )
 
-    return results
+    documents = results.get("documents") or []
+    metadatas = results.get("metadatas") or []
+    distances = results.get("distances") or []
+
+    # Validar estructura
+    if not documents or not metadatas or not distances:
+        return {"documents": [], "metadatas": [], "distances": []}
+
+    docs = documents[0] if len(documents) > 0 else []
+    mets = metadatas[0] if len(metadatas) > 0 else []
+    dists = distances[0] if len(distances) > 0 else []
+
+    filtered_docs = []
+    filtered_metas = []
+    filtered_dists = []
+
+    for doc, meta, dist in zip(docs, mets, dists):
+        if dist <= 1.6:
+            filtered_docs.append(doc)
+            filtered_metas.append(meta)
+            filtered_dists.append(dist)
+
+    return {
+        "documents": [filtered_docs],
+        "metadatas": [filtered_metas],
+        "distances": [filtered_dists]
+    }
