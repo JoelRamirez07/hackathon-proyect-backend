@@ -7,9 +7,19 @@ from scraper import scrape_url
 from processor_ai import process_text, chat_with_context
 from vector_db import add_document, get_collection, search_similar
 
+from fastapi.middleware.cors import CORSMiddleware
+
+
 
 app = FastAPI(title="Backend Hackathon - Sistema RAG")
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # En producción NO usar "*"
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # =========================
 # MODELOS
