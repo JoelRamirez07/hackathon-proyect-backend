@@ -77,3 +77,29 @@ def debug_db():
         "ids": data["ids"],
         "metadatas": data["metadatas"]
     }
+
+@app.get("/buscar")
+def buscar(query: str, top_k: int = 3):
+    try:
+        from vector_db import search_similar
+
+        results = search_similar(query, top_k)
+
+        respuesta = []
+
+        for i in range(len(results["ids"][0])):
+            respuesta.append({
+                "id": results["ids"][0][i],
+                "distancia": results["distances"][0][i],
+                "metadata": results["metadatas"][0][i],
+                "contenido": results["documents"][0][i][:500]  # preview
+            })
+
+        return {
+            "query": query,
+            "total": len(respuesta),
+            "resultados": respuesta
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

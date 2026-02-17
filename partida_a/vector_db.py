@@ -29,3 +29,16 @@ def add_document(doc_id: str, content: str, metadata: dict):
     )
 
     print("📦 Documento insertado:", doc_id)
+
+def search_similar(query: str, top_k: int = 3):
+    col = get_collection()
+
+    query_embedding = generar_embedding(query)
+
+    results = col.query(
+        query_embeddings=[query_embedding],
+        n_results=top_k,
+        include=["documents", "metadatas", "distances"]
+    )
+
+    return results
