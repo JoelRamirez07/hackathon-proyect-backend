@@ -1,10 +1,16 @@
-Para iniciar el sistema hay que instalar Python, en esta ocasión se esta usando 3.11.9, se instala en donde desee el usuario, de hi hay que montar el entorno virtual por lo que hay que acceder a la carpeta donde estaremos trabando desde CMD y ejecutar:
-python -m venv venv venv\Scripts\actívate
+1. Instalación de Python
+Para iniciar el sistema, es necesario instalar Python. En esta ocasión, se utiliza la versión 3.11.9. Python puede instalarse en cualquier ubicación seleccionada por el usuario.
 
-Si todo sale bien se vera la carpeta y antes de este la palabra (venv):
+2. Creación del Entorno Virtual
+Una vez instalado Python, se debe crear un entorno virtual. Para ello, abra CMD y acceda a la carpeta donde se trabajará. Luego, ejecute los siguientes comandos:
+python -m venv venv
 venv\Scripts\activate
 
-Después hay que tener en la raíz del proyecto el archivo txt requirements, con los siguientes datos:
+Si la activación es correcta, se visualizará la carpeta del entorno virtual precedida por (venv) en la terminal:
+(venv) C:\ruta\a\proyecto>
+
+3. Instalación de Dependencias
+En la raíz del proyecto, asegúrese de contar con un archivo requirements.txt que contenga las siguientes librerías:
 fastapi
 uvicorn
 requests
@@ -14,35 +20,32 @@ llama-index
 chromadb
 python-dotenv
 
-
-Y en nuestro cmd donde tenemos el entorno virtual ejecutar:
-pip install -r requirements.txt
-
-
-Para la parte de la api, se saco de: (este no porque no da creditos gratis)
-https://platform.openai.com
-
-Se cambio por gemini:
-https://aistudio.google.com/
-
-
-En Get API Key, sacar la Key
-
-Ponerlo en el .env
-Instalar la libreria en la imaagen virtual (CMD)
+4. Configuración de la API
+Originalmente se utilizaba la plataforma OpenAI, pero se ha reemplazado por Gemini. Los pasos son los siguientes:
+Acceda a: AI Studio – Gemini
+Obtenga su API Key en la sección Get API Key.
+Coloque la clave obtenida en el archivo .env del proyecto.
+Instalar la librería correspondiente en el entorno virtual:
 pip install google-genai
 
+Con el entorno virtual activado, instalar las dependencias ejecutando:
+pip install -r requirements.txt
 
-Ejecutar el proceso:
+5. Ejecución del Proceso de Ingesta
+Para ejecutar el proceso inicial, utilice:
 python partida_a/test_ingesta.py
 
-Instala:
+Adicionalmente, instalar las siguientes librerías necesarias para procesamiento de modelos:
 pip install torch transformers sentence-transformers
 
-De ahi es instalar chromaDB:
+Luego, instalar ChromaDB:
 pip install chromadb
 
-FastAPI 
-Paso 1: Crear carpeta main.py
-Paso 2: pip install fastapi uvicorn (venv) backend
-Paso 3: uvicorn main:app --reload (venv) partida_a
+6. Configuración de FastAPI
+Para levantar la API utilizando FastAPI, siga estos pasos:
+Crear el archivo main.py en la carpeta correspondiente.
+Instalar FastAPI y Uvicorn en el entorno virtual:
+pip install fastapi uvicorn
+
+Ejecutar el servidor de desarrollo:
+uvicorn main:app --reload
