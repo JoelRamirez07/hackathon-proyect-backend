@@ -1,13 +1,28 @@
 from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 import uuid
 import json
 
 from scraper import scrape_url
 from processor_ai import process_text
-from vector_db import add_document, get_collection
+from vector_db import add_document, get_collection, search_similar
 
-app = FastAPI(title="Backend Hackathon")
 
+app = FastAPI(title="Backend Hackathon - Sistema RAG")
+
+
+# =========================
+# MODELOS
+# =========================
+
+class ChatRequest(BaseModel):
+    pregunta: str
+    top_k: int = 3
+
+
+# =========================
+# INGESTA
+# =========================
 
 @app.post("/ingestar")
 def ingestar_url(url: str):
@@ -42,7 +57,7 @@ Resumen:
 
 Palabras clave:
 {palabras}
-"""
+""".strip()
 
         # 5️⃣ Guardar en BD
         doc_id = str(uuid.uuid4())
@@ -52,7 +67,8 @@ Palabras clave:
             content=texto_para_embedding,
             metadata={
                 "url": url,
-                "categoria": resultado["categoria"]
+                "categoria": resultado["categoria"],
+                "palabras_clave": resultado["palabras_clave"]
             }
         )
 
@@ -66,7 +82,10 @@ Palabras clave:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# 🔎 ENDPOINT PARA VER LOS INSERTS
+# =========================
+# DEBUG
+# =========================
+
 @app.get("/debug")
 def debug_db():
     col = get_collection()
@@ -78,11 +97,14 @@ def debug_db():
         "metadatas": data["metadatas"]
     }
 
+
+# =========================
+# BÚSQUEDA SEMÁNTICA
+# =========================
+
 @app.get("/buscar")
 def buscar(query: str, top_k: int = 3):
     try:
-        from vector_db import search_similar
-
         results = search_similar(query, top_k)
 
         respuesta = []
@@ -92,13 +114,68 @@ def buscar(query: str, top_k: int = 3):
                 respuesta.append({
                     "distancia": results["distances"][0][i],
                     "metadata": results["metadatas"][0][i],
-                    "contenido": results["documents"][0][i][:500]
+                    "contenido_preview": results["documents"][0][i][:500]
                 })
 
         return {
             "query": query,
             "total": len(respuesta),
             "resultados": respuesta
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# =========================
+# CHAT RAG COMPLETO
+# =========================
+
+@app.post("/chat")
+def chat_rag(data: ChatRequest):
+    try:
+        # 1️⃣ Buscar contexto en BD
+        results = search_similar(data.pregunta, data.top_k)
+
+        documentos = results.get("documents", [[]])[0]
+
+        if not documentos:
+            return {
+                "respuesta": "No se encontró información relevante en la base de datos."
+            }
+
+        # 2️⃣ Construir contexto
+        contexto = "\n\n---\n\n".join(documentos)
+
+        # 3️⃣ Prompt RAG cerrado
+        prompt = f"""
+Eres un asistente experto.
+Responde ÚNICAMENTE con base en el siguiente contexto.
+Si la información no está en el contexto, responde:
+"No se encontró información suficiente en la base de datos."
+
+CONTEXTO:
+{contexto}
+
+PREGUNTA:
+{data.pregunta}
+
+RESPUESTA:
+"""
+
+        # 4️⃣ Llamada a IA
+        respuesta = process_text(prompt)
+
+        # 5️⃣ Limpiar salida
+        respuesta = (
+            respuesta
+            .replace("```", "")
+            .strip()
+        )
+
+        return {
+            "pregunta": data.pregunta,
+            "respuesta": respuesta
         }
 
     except Exception as e:
