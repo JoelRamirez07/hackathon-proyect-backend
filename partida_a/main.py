@@ -4,7 +4,7 @@ import uuid
 import json
 
 from scraper import scrape_url
-from processor_ai import process_text
+from processor_ai import process_text, chat_with_context
 from vector_db import add_document, get_collection, search_similar
 
 
@@ -33,10 +33,10 @@ def ingestar_url(url: str):
         if not texto_crudo or len(texto_crudo) < 100:
             raise HTTPException(status_code=400, detail="Texto insuficiente")
 
-        # 2️⃣ Procesamiento IA
+        # 2️⃣ Procesamiento IA (clasificación + resumen)
         resultado_raw = process_text(texto_crudo)
 
-        # 3️⃣ Limpiar markdown ```json
+        # 3️⃣ Limpiar markdown ```json si existe
         resultado_raw = (
             resultado_raw
             .replace("```json", "")
@@ -59,7 +59,7 @@ Palabras clave:
 {palabras}
 """.strip()
 
-        # 5️⃣ Guardar en BD
+        # 5️⃣ Guardar en ChromaDB
         doc_id = str(uuid.uuid4())
 
         add_document(
@@ -83,7 +83,7 @@ Palabras clave:
 
 
 # =========================
-# DEBUG
+# DEBUG BASE VECTORIAL
 # =========================
 
 @app.get("/debug")
@@ -119,7 +119,7 @@ def buscar(query: str, top_k: int = 3):
 
         return {
             "query": query,
-            "total": len(respuesta),
+            "total_resultados": len(respuesta),
             "resultados": respuesta
         }
 
@@ -134,44 +134,21 @@ def buscar(query: str, top_k: int = 3):
 @app.post("/chat")
 def chat_rag(data: ChatRequest):
     try:
-        # 1️⃣ Buscar contexto en BD
+        # 1️⃣ Buscar contexto relevante
         results = search_similar(data.pregunta, data.top_k)
-
         documentos = results.get("documents", [[]])[0]
 
         if not documentos:
             return {
-                "respuesta": "No se encontró información relevante en la base de datos."
+                "pregunta": data.pregunta,
+                "respuesta": "No se encontró información suficiente en la base de datos."
             }
 
         # 2️⃣ Construir contexto
         contexto = "\n\n---\n\n".join(documentos)
 
-        # 3️⃣ Prompt RAG cerrado
-        prompt = f"""
-Eres un asistente experto.
-Responde ÚNICAMENTE con base en el siguiente contexto.
-Si la información no está en el contexto, responde:
-"No se encontró información suficiente en la base de datos."
-
-CONTEXTO:
-{contexto}
-
-PREGUNTA:
-{data.pregunta}
-
-RESPUESTA:
-"""
-
-        # 4️⃣ Llamada a IA
-        respuesta = process_text(prompt)
-
-        # 5️⃣ Limpiar salida
-        respuesta = (
-            respuesta
-            .replace("```", "")
-            .strip()
-        )
+        # 3️⃣ Llamar a función especializada de chat
+        respuesta = chat_with_context(contexto, data.pregunta)
 
         return {
             "pregunta": data.pregunta,
